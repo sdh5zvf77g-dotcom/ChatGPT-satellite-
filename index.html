@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="SatSky">
-  <meta name="theme-color" content="#070b14">
-  <title>SatSky</title>
+  <meta name="apple-mobile-web-app-title" content="SatSky Pro">
+  <meta name="theme-color" content="#060a12">
+  <title>SatSky Pro</title>
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
   <link rel="apple-touch-icon" sizes="167x167" href="icon-167.png">
@@ -20,14 +20,14 @@
 <body>
   <header>
     <div class="brand">
-      <img src="icon-180.png" width="30" height="30" alt="">
+      <img src="icon-180.png" width="32" height="32" alt="">
       <div>
-        <h1>SatSky</h1>
-        <p class="tag">What’s above you right now</p>
+        <h1>SatSky Pro</h1>
+        <p class="tag">Orbital data · catalogue research · pass predictions</p>
       </div>
     </div>
     <div class="meta">
-      <span id="source-badge" class="badge offline">—</span>
+      <span id="src" class="badge seed">Offline seed</span>
       <span id="loc" class="pill">📍 …</span>
       <span id="clock" class="pill">—</span>
     </div>
@@ -38,74 +38,89 @@
     <section class="controls">
       <input id="search" type="search" placeholder="Search name or NORAD…" autocomplete="off">
       <div class="row">
-        <select id="type-filter">
+        <select id="type">
           <option value="all">All types</option>
           <option value="Space Station">Space Stations</option>
           <option value="Science">Science</option>
-          <option value="Weather">Weather</option>
-          <option value="Earth Observation">Earth Obs</option>
-          <option value="Navigation">Navigation</option>
-          <option value="Communications">Comms</option>
-          <option value="Starlink">Starlink</option>
           <option value="Bright">Bright</option>
+          <option value="Weather">Weather</option>
+          <option value="Navigation">Navigation</option>
           <option value="Amateur">Amateur</option>
+          <option value="Starlink">Starlink</option>
+          <option value="Active">Active</option>
         </select>
-        <label class="el-label">Min El <span id="el-val">5°</span>
-          <input id="el-filter" type="range" min="0" max="30" value="5">
+        <select id="sort">
+          <option value="el">Sort: Elevation</option>
+          <option value="name">Sort: Name</option>
+          <option value="range">Sort: Range</option>
+        </select>
+      </div>
+      <div class="row">
+        <label class="el">Min El <strong id="elval">5°</strong>
+          <input id="el" type="range" min="0" max="40" value="5">
         </label>
+        <button id="favonly" class="chip">☆ Favourites only</button>
       </div>
     </section>
 
     <section>
-      <div class="sec-head">Sky <span class="count" id="vis-count">0</span> / <span id="total-count">0</span></div>
-      <div class="sky-wrap"><canvas id="sky" width="320" height="320"></canvas></div>
-    </section>
-
-    <section>
-      <div class="sec-head">Next rising passes (stations & Hubble)</div>
-      <div id="passes" class="passes"></div>
-    </section>
-
-    <section>
-      <div class="sec-head">Currently visible <span class="hint">Tap for full intelligence profile</span></div>
-      <div id="list" class="list"><div class="empty">Loading…</div></div>
-    </section>
-
-    <section class="catalog-section">
-      <div class="sec-head">Satellite intelligence catalogue <span class="count" id="catalog-count">0</span></div>
-      <p class="section-copy">Search every object loaded from the current catalogue, including satellites below the horizon. Mission details are labelled as verified, inferred from the object category, or not yet known.</p>
-      <div class="catalog-tools">
-        <select id="catalog-sort" aria-label="Sort catalogue">
-          <option value="name">Sort: Name A–Z</option>
-          <option value="norad">Sort: NORAD ID</option>
-          <option value="altitude">Sort: Approx. altitude</option>
-          <option value="period">Sort: Orbital period</option>
-          <option value="favorite">Sort: Favourites first</option>
-        </select>
-        <button id="btn-favorites" class="small-action" aria-pressed="false">☆ Favourites only</button>
+      <div class="sec">Load catalogue groups</div>
+      <div class="groups">
+        <button data-group="stations">Stations</button>
+        <button data-group="visual">Brightest</button>
+        <button data-group="science">Science</button>
+        <button data-group="weather">Weather</button>
+        <button data-group="gps">GPS</button>
+        <button data-group="amateur">Amateur</button>
+        <button data-group="starlink" class="warn">Starlink</button>
+        <button data-group="active" class="warn">All Active</button>
       </div>
-      <div id="catalog-list" class="list"><div class="empty">Load live data to populate the catalogue.</div></div>
-      <button id="btn-more" class="ghost wide-action" hidden>Show more objects</button>
-      <button id="btn-full-catalog" class="wide-action">Load full active catalogue</button>
-      <p class="section-copy">The full active catalogue can contain thousands of objects and may take time to load on mobile. Data availability depends on CelesTrak and your network.</p>
     </section>
+
+    <section>
+      <div class="sec">Sky <span class="count" id="vcount">0</span> / <span id="tcount">0</span></div>
+      <div class="sky-box"><canvas id="sky" width="320" height="320"></canvas></div>
+    </section>
+
+    <section>
+      <div class="sec">Next rising passes</div>
+      <div id="passes"></div>
+    </section>
+
+    <section>
+      <div class="sec">Currently visible <span class="hint">Tap for intelligence profile</span>
+        <button id="btn-copy" class="sec-btn" type="button">Copy list</button>
+      </div>
+      <div id="visible" class="list"></div>
+    </section>
+
+    <section>
+      <div class="sec">Full catalogue <span class="hint">All loaded objects</span></div>
+      <div id="catalog" class="catalog"></div>
+    </section>
+
+    <p class="note">
+      Offline seed contains checksum-valid TLEs for ISS + Hubble; their age is displayed. Live groups come from CelesTrak.
+      No fabricated orbital elements are ever used. Element age is shown in each profile.
+      This is a prediction tool, not a radio receiver.
+    </p>
   </main>
 
-  <div id="detail-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="detail-title">
-    <div class="modal-backdrop" data-close="1"></div>
-    <article class="detail-sheet">
-      <div class="detail-heading"><div><div class="eyebrow">SATELLITE PROFILE</div><h2 id="detail-title">Satellite</h2><p id="detail-subtitle" class="muted"></p></div><button id="detail-close" class="close-btn" aria-label="Close satellite details">×</button></div>
-      <div id="detail-body"></div>
-      <div class="detail-links" id="detail-links"></div>
-    </article>
-  </div>
   <footer>
-    <button id="btn-refresh" class="ghost">Refresh position</button>
-    <button id="btn-live">Try live data</button>
+    <button id="btn-loc" class="ghost">Refresh position</button>
+    <button id="btn-live">Load stations + brightest</button>
   </footer>
 
+  <aside id="drawer" class="drawer">
+    <div class="drawer-head">
+      <h2 id="drawer-title">—</h2>
+      <button id="drawer-close">✕</button>
+    </div>
+    <div id="drawer-body" class="drawer-body"></div>
+  </aside>
+
   <script src="satellite.min.js"></script>
-  <script src="satellites.js"></script>
+  <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
